@@ -55,12 +55,7 @@ class PostController extends Controller
                 'category_id' => 'required|exists:categories,id',
             ]);
 
-            $validated['slug'] = Str::slug($validated['title']);
-            $originalSlug = $validated['slug'];
-            $count = 1;
-            while (Post::where('slug', $validated['slug'])->exists()) {
-                $validated['slug'] = $originalSlug . '-' . $count++;
-            }
+            $validated['slug'] = Post::generateUniqueSlug($validated['title']);
 
             $post = Post::create($validated);
 
@@ -135,12 +130,7 @@ class PostController extends Controller
             ]);
 
             if (isset($validated['title'])) {
-                $validated['slug'] = Str::slug($validated['title']);
-                $originalSlug = $validated['slug'];
-                $count = 1;
-                while (Post::where('slug', $validated['slug'])->where('id', '!=', $post->id)->exists()) {
-                    $validated['slug'] = $originalSlug . '-' . $count++;
-                }
+                $validated['slug'] = Post::generateUniqueSlug($validated['title'], $post->id);
             }
 
             $post->update($validated);

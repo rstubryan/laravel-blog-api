@@ -53,13 +53,7 @@ class CategoryController extends Controller
                 'description' => 'nullable|string',
             ]);
 
-            $validated['slug'] = Str::slug($validated['name']);
-            $originalSlug = $validated['slug'];
-            $count = 1;
-            while (Category::where('slug', $validated['slug'])->exists()) {
-                $validated['slug'] = $originalSlug . '-' . $count++;
-            }
-
+            $validated['slug'] = Category::generateUniqueSlug($validated['name']);
             $category = Category::create($validated);
 
             return response()->json([
@@ -131,12 +125,7 @@ class CategoryController extends Controller
             ]);
 
             if (isset($validated['name'])) {
-                $validated['slug'] = Str::slug($validated['name']);
-                $originalSlug = $validated['slug'];
-                $count = 1;
-                while (Category::where('slug', $validated['slug'])->where('id', '!=', $category->id)->exists()) {
-                    $validated['slug'] = $originalSlug . '-' . $count++;
-                }
+                $validated['slug'] = Category::generateUniqueSlug($validated['name'], $category->id);
             }
 
             $category->update($validated);

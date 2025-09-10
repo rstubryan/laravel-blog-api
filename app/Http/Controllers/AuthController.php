@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
@@ -116,13 +117,12 @@ class AuthController extends Controller
     public function destroy(Request $request)
     {
         try {
-            $user = $request->user();
-            if ($user) {
-                $user->currentAccessToken()->delete();
+            $token = $request->cookie('access_token');
+            if ($token) {
+                $user = PersonalAccessToken::findToken($token);
+                $user?->delete();
             }
-
             $cookie = cookie('access_token', '', -1, '/', null, false, true);
-
             return response()->json([
                 'status' => 'success',
                 'message' => 'Logout successful.',

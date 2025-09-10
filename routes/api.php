@@ -11,8 +11,7 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::post('/login', [AuthController::class, 'store'])->middleware('throttle:10,1');
-Route::post('/logout', [AuthController::class, 'destroy'])->middleware('auth:sanctum');
-
+Route::post('/logout', [AuthController::class, 'destroy']);
 Route::prefix('posts')->group(function () {
     Route::get('/', [PostController::class, 'index']);
     Route::get('{post}', [PostController::class, 'show']);

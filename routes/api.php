@@ -10,7 +10,7 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::post('/login', [AuthController::class, 'store']);
+Route::post('/login', [AuthController::class, 'store'])->middleware('throttle:10,1');
 Route::post('/logout', [AuthController::class, 'destroy'])->middleware('auth:sanctum');
 
 Route::prefix('posts')->group(function () {

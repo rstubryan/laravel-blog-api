@@ -43,11 +43,20 @@ class AuthController extends Controller
             $user = Auth::user();
             $token = $user->createToken('api_token')->plainTextToken;
 
+            $cookie = cookie(
+                'access_token',
+                $token,
+                60 * 24,
+                null,
+                null,
+                false,
+                true
+            );
+
             return response()->json([
                 'user' => $user,
-                'access_token' => $token,
                 'token_type' => 'Bearer',
-            ]);
+            ])->cookie($cookie);
         } catch (\Throwable $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }

@@ -13,14 +13,22 @@ class PostController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $posts = Post::all();
+            $perPage = (int)$request->input('per_page', 10);
+            $posts = Post::paginate($perPage);
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Posts retrieved successfully.',
-                'content' => $posts,
+                'content' => [
+                    'data' => $posts->items(),
+                    'current_page' => $posts->currentPage(),
+                    'last_page' => $posts->lastPage(),
+                    'per_page' => $posts->perPage(),
+                    'total' => $posts->total(),
+                ],
                 'errors' => []
             ]);
         } catch (\Throwable $e) {

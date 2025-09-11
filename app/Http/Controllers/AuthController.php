@@ -138,4 +138,39 @@ class AuthController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Verify the provided token.
+     **/
+    public function verifyToken(Request $request)
+    {
+        $token = $request->input('token') ?? $request->cookie('access_token');
+
+        if (!$token) {
+            return response()->json([
+                'status' => 'fail',
+                'content' => null,
+                'message' => 'Token not provided.',
+                'errors' => []
+            ], 400);
+        }
+
+        $accessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+
+        if ($accessToken && $accessToken->tokenable) {
+            return response()->json([
+                'status' => 'success',
+                'content' => null,
+                'message' => 'Token Verified!',
+                'errors' => []
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'fail',
+            'content' => null,
+            'message' => 'Invalid token.',
+            'errors' => []
+        ], 401);
+    }
 }

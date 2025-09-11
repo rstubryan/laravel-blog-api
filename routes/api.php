@@ -12,6 +12,8 @@ Route::get('/user', function (Request $request) {
 
 Route::post('/login', [AuthController::class, 'store'])->middleware('throttle:10,1');
 Route::post('/logout', [AuthController::class, 'destroy']);
+Route::post('/verify-token', [AuthController::class, 'verifyToken']);
+
 Route::prefix('posts')->group(function () {
     Route::get('/', [PostController::class, 'index']);
     Route::get('{post}', [PostController::class, 'show']);

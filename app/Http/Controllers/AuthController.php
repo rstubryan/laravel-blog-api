@@ -48,36 +48,16 @@ class AuthController extends Controller
                 ], 401);
             }
 
-            if (!Auth::check()) {
-                return response()->json([
-                    'status' => 'fail',
-                    'message' => 'Authentication failed.',
-                    'content' => null,
-                    'errors' => []
-                ], 401);
-            }
-
-            $user = Auth::user();
-            $token = $user->createToken('api_token')->plainTextToken;
-
-            $cookie = cookie(
-                'access_token',
-                $token,
-                60 * 24,
-                '/',
-                null,
-                false,
-                true
-            );
+            $request->session()->regenerate();
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Login successful.',
                 'content' => [
-                    'user' => $user,
+                    'user' => Auth::user(),
                 ],
                 'errors' => []
-            ])->cookie($cookie);
+            ]);
         } catch (ValidationException $e) {
             return response()->json([
                 'status' => 'fail',
@@ -117,18 +97,16 @@ class AuthController extends Controller
     public function destroy(Request $request)
     {
         try {
-            $token = $request->cookie('access_token');
-            if ($token) {
-                $user = PersonalAccessToken::findToken($token);
-                $user?->delete();
-            }
-            $cookie = cookie('access_token', '', -1, '/', null, false, true);
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Logout successful.',
                 'content' => null,
                 'errors' => []
-            ])->cookie($cookie);
+            ]);
         } catch (\Throwable $e) {
             return response()->json([
                 'status' => 'error',
@@ -137,40 +115,5 @@ class AuthController extends Controller
                 'errors' => [$e->getMessage()]
             ], 500);
         }
-    }
-
-    /**
-     * Verify the provided token.
-     **/
-    public function verifyToken(Request $request)
-    {
-        $token = $request->input('token') ?? $request->cookie('access_token');
-
-        if (!$token) {
-            return response()->json([
-                'status' => 'fail',
-                'content' => null,
-                'message' => 'Token not provided.',
-                'errors' => []
-            ], 400);
-        }
-
-        $accessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
-
-        if ($accessToken && $accessToken->tokenable) {
-            return response()->json([
-                'status' => 'success',
-                'content' => null,
-                'message' => 'Token Verified!',
-                'errors' => []
-            ]);
-        }
-
-        return response()->json([
-            'status' => 'fail',
-            'content' => null,
-            'message' => 'Invalid token.',
-            'errors' => []
-        ], 401);
     }
 }
